@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pembuat Surat Jalan SPPG Asam Jawa - Multi Sekolah</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f3f4f6;
+      color: #1f2937;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Panel Kontrol Kiri */
+    .sidebar {
+      width: 380px;
+      background: #ffffff;
+      border-right: 1px solid #e5e7eb;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+      z-index: 10;
+      position: fixed;
+      height: 100vh;
+      left: 0;
+      top: 0;
+    }
+
+    .sidebar h2 {
+      font-size: 1.25rem;
+      color: #1e3a8a;
+      border-bottom: 2px solid #3b82f6;
+      padding-bottom: 8px;
+    }
+
+    .counter-box {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-weight: 600;
+      color: #1e40af;
+      font-size: 0.95rem;
+      text-align: center;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: #4b5563;
+    }
+
+    .form-control, select {
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-control:focus, select:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .btn-action {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-action:hover {
+      background: #1d4ed8;
+    }
+
+    .btn-print {
+      background: #059669;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s;
+      margin-top: 10px;
+    }
+
+    .btn-print:hover {
+      background: #047857;
+    }
+
+    /* Area Display Kertas A4 */
+    .main-content {
+      flex: 1;
+      margin-left: 380px;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+      background: #e5e7eb;
+    }
+
+    .page-wrapper {
+      position: relative;
+    }
+
+    .page-badge {
+      position: absolute;
+      top: -25px;
+      left: 0;
+      background: #1e3a8a;
+      color: white;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+
+    .btn-delete-page {
+      position: absolute;
+      top: -15px;
+      right: -15px;
+      background: #dc2626;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+    }
+
+    .btn-delete-page:hover {
+      background: #b91c1c;
+    }
+
+    .page-a4 {
+      width: 210mm;
+      min-height: 297mm;
+      background: white;
+      padding: 12mm 15mm;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .doc-section {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 11pt;
+      line-height: 1.35;
+      color: #000;
+    }
+
+    /* Kop Surat */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 3px double #000;
+      padding-bottom: 4px;
+      margin-bottom: 8px;
+    }
+
+    .logo {
+      width: 65px;
+      height: 65px;
+      object-fit: contain;
+    }
+
+    .header-text {
+      text-align: center;
+      flex: 1;
+    }
+
+    .header-text h3 {
+      font-size: 11pt;
+      font-weight: bold;
+      margin-bottom: 1px;
+    }
+
+    .header-text h2 {
+      font-size: 12pt;
+      font-weight: bold;
+      margin-bottom: 1px;
+    }
+
+    .header-text h1 {
+      font-size: 12pt;
+      font-weight: bold;
+      margin-bottom: 2px;
+    }
+
+    .header-text p {
+      font-size: 8.5pt;
+      font-style: italic;
+    }
+
+    /* Judul Surat */
+    .doc-title {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .doc-title h4 {
+      font-size: 12pt;
+      font-weight: bold;
+      text-decoration: underline;
+    }
+
+    .doc-title p {
+      font-size: 10pt;
+    }
+
+    .content-body {
+      text-align: justify;
+      margin-bottom: 12px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 3px;
+      margin-bottom: 15px;
+    }
+
+    .info-row {
+      display: flex;
+    }
+
+    .info-label {
+      width: 190px;
+    }
+
+    .info-dots {
+      flex: 1;
+    }
+
+    .signature-container {
+      margin-top: 10px;
+    }
+
+    .sig-header {
+      text-align: center;
+      margin-bottom: 5px;
+    }
+
+    .sig-roles {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 40px;
+      text-align: center;
+    }
+
+    .sig-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      height: 70px;
+    }
+
+    .sig-name {
+      font-weight: bold;
+    }
+
+    .sig-bottom {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    .sig-bottom-left {
+      width: 60%;
+    }
+
+    .sig-bottom-right {
+      width: 35%;
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .divider {
+      border-top: 1px dashed #666;
+      margin: 15px 0;
+    }
+
+    [contenteditable="true"] {
+      border-bottom: 1px dashed #f59e0b;
+      background-color: #fffbeb;
+      padding: 0 2px;
+      outline: none;
+    }
+
+    /* Pengaturan Cetak / Print PDF */
+    @media print {
+      body {
+        background: white;
+      }
+      .sidebar, .btn-delete-page, .page-badge {
+        display: none !important;
+      }
+      .main-content {
+        margin-left: 0;
+        padding: 0;
+        background: white;
+        gap: 0;
+      }
+      .page-a4 {
+        box-shadow: none;
+        width: 100%;
+        height: 100%;
+        padding: 10mm 15mm;
+        page-break-after: always;
+      }
+      [contenteditable="true"] {
+        border-bottom: none !important;
+        background-color: transparent !important;
+      }
+      @page {
+        size: A4;
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Panel Kontrol Kiri -->
+  <div class="sidebar">
+    <h2>Manajemen Surat Jalan</h2>
+    
+    <div class="counter-box" id="pageCounterText">
+      Total Lembar: 0 Halaman
+    </div>
+
+    <div class="form-group">
+      <label for="schoolSelect">Pilih Sekolah untuk Halaman Baru:</label>
+      <select id="schoolSelect" class="form-control">
+        <!-- Diisi otomatis via JavaScript -->
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="inputNoSurat">Nomor Surat Default:</label>
+      <input type="text" id="inputNoSurat" class="form-control" value="01">
+    </div>
+
+    <div class="form-group">
+      <label for="inputTanggal">Tanggal & Bulan:</label>
+      <input type="text" id="inputTanggal" class="form-control" value="26 Oktober">
+    </div>
+
+    <div class="form-group">
+      <label for="inputHari">Hari:</label>
+      <select id="inputHari" class="form-control">
+        <option value="Senin">Senin</option>
+        <option value="Selasa">Selasa</option>
+        <option value="Rabu">Rabu</option>
+        <option value="Kamis">Kamis</option>
+        <option value="Jumat">Jumat</option>
+        <option value="Sabtu">Sabtu</option>
+      </select>
+    </div>
+
+    <button class="btn-action" onclick="addNewPageManually()">➕ Tambah Halaman Sekolah Ini</button>
+
+    <button class="btn-print" onclick="window.print()">
+      🖨️ Cetak / Save Semua Halaman PDF
+    </button>
+  </div>
+
+  <!-- Area Kontainer Halaman Kertas A4 -->
+  <div class="main-content" id="pagesContainer">
+    <!-- Halaman akan ditambahkan secara dinamis di sini -->
+  </div>
+
+  <script>
+    const schoolDatabase = [
+      { name: "TK Nanda Sholehah", qty: 50, driver: "Sumarno", telp: "082337348419" },
+      { name: "TK Cut Nyak Dien", qty: 50, driver: "Sumarno", telp: "082337348419" },
+      { name: "TK Diponegoro", qty: 34, driver: "Taufiq Refananda", telp: "081396819689" },
+      { name: "TK Ade Irma", qty: 28, driver: "Sumarno", telp: "082337348419" },
+      { name: "TK Teladan", qty: 37, driver: "Sumarno", telp: "082337348419" },
+      { name: "TK Mardiah", qty: 55, driver: "Taufiq Refananda", telp: "081396819689" },
+      { name: "TK Ar Riza 1", qty: 34, driver: "Taufiq Refananda", telp: "081396819689" },
+      { name: "TK Ar Riza 2", qty: 23, driver: "Sumarno", telp: "082337348419" },
+      { name: "SD 04 Asam Jawa", qty: 268, driver: "Taufiq Refananda", telp: "081396819689" },
+      { name: "SD 06", qty: 305, driver: "Sumarno", telp: "082337348419" },
+      { name: "SD 42", qty: 367, driver: "Taufiq Refananda", telp: "081396819689" },
+      { name: "SD 44", qty: 160, driver: "Sumarno", telp: "082337348419" },
+      { name: "MTS Al Amin", qty: 18, driver: "Sumarno", telp: "082337348419" },
+      { name: "SMAN 2", qty: 481, driver: "Taufiq Refananda", telp: "081396819689" },
+      { name: "SMPN 1", qty: 458, driver: "Sumarno", telp: "082337348419" },
+      { name: "TK Al Hidayah", qty: 26, driver: "Sumarno", telp: "082337348419" },
+      { name: "SMK Abdi Negara", qty: 135, driver: "Taufiq Refananda", telp: "081396819689" }
+    ];
+
+    let pageCount = 0;
+
+    window.onload = () => {
+      // Inisialisasi dropdown pilihan sekolah
+      const selectElem = document.getElementById("schoolSelect");
+      schoolDatabase.forEach((item, idx) => {
+        const option = document.createElement("option");
+        option.value = idx;
+        option.textContent = `${idx + 1}. ${item.name} (${item.qty} Pkt)`;
+        selectElem.appendChild(option);
+      });
+
+      // Otomatis buatkan ke-17 halaman untuk masing-masing sekolah saat dibuka
+      schoolDatabase.forEach((school, idx) => {
+        addNewPage(idx);
+      });
+    };
+
+    function addNewPage(schoolIndex) {
+      pageCount++;
+      const container = document.getElementById("pagesContainer");
+      
+      const school = schoolDatabase[schoolIndex];
+      const noSurat = document.getElementById("inputNoSurat").value;
+      const tanggal = document.getElementById("inputTanggal").value;
+      const hari = document.getElementById("inputHari").value;
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "page-wrapper";
+      wrapper.id = `pageWrapper_${pageCount}`;
+
+      let deleteBtnHtml = `<button class="btn-delete-page" onclick="removePage(${pageCount})" title="Hapus Halaman">✕</button>`;
+
+      wrapper.innerHTML = `
+        <div class="page-badge">Lembar ke-${pageCount} (${school.name})</div>
+        ${deleteBtnHtml}
+        <div class="page-a4">
+          <!-- BAGIAN ATAS: PENGIRIMAN MAKANAN -->
+          <div class="doc-section">
+            <div class="header">
+              <img src="Logobgn.png" alt="Logo BGN" class="logo">
+              <div class="header-text">
+                <h3>BADAN GIZI NASIONAL</h3>
+                <h2>SATUAN PELAYANAN PEMENUHAN GIZI</h2>
+                <h1>LABUHANBATU SELATAN TORGAMBA ASAM JAWA</h1>
+                <p>JL. Lintas Sumatera, Asam Jawa, Kec. Torgamba, Kab. Labuhanbatu Selatan. 21464</p>
+              </div>
+              <img src="Logokemala.png" alt="Logo Bhayangkari" class="logo">
+            </div>
+
+            <div class="doc-title">
+              <h4>SURAT JALAN</h4>
+              <p>Nomor : <span contenteditable="true">${noSurat}</span>/SPJ/X/2026/SPPG ASAM JAWA (03 KEMALA BHAYANGKARI)</p>
+            </div>
+
+            <div class="content-body">
+              Pada hari <span contenteditable="true">${hari}</span> Tanggal <span contenteditable="true">${tanggal}</span> Jam <span contenteditable="true">08.00</span> telah diterima paket makanan bergizi sejumlah <span contenteditable="true">${school.qty}</span> paket makan bergizi dari SATUAN PELAYANAN PEMENUHAN GIZI ( SPPG ) Labuhanbatu Selatan Torgamba, Asam Jawa. Maximum waktu ompreng di konsumsi.
+            </div>
+
+            <div class="info-grid">
+              <div class="info-row">
+                <div class="info-label">Yang menyerahkan (Driver)</div>
+                <div>: <span contenteditable="true">${school.driver}</span></div>
+              </div>
+              <div class="info-row">
+                <div class="info-label">Nomor Telpon</div>
+                <div>: <span contenteditable="true">${school.telp}</span></div>
+              </div>
+            </div>
+
+            <div class="signature-container">
+              <div class="sig-header">Mengetahui:</div>
+              <div class="sig-roles">
+                <div class="sig-box">
+                  <div>Kepala SPPG</div>
+                  <div class="sig-name" contenteditable="true">Suci Habibi Pulungan,S.Sos</div>
+                </div>
+                <div class="sig-box">
+                  <div>Pengawas Distribusi</div>
+                  <div class="sig-name" contenteditable="true">Ryan Kurniawan</div>
+                </div>
+              </div>
+
+              <div class="sig-bottom">
+                <div class="sig-bottom-left">
+                  <div>Yang Menerima : ………………………….</div>
+                  <div>(PIC <span contenteditable="true">${school.name}</span>)</div>
+                  <div>Nomor Telepon : ………………………….</div>
+                </div>
+                <div class="sig-bottom-right">
+                  <div>(……………………………….)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- BAGIAN BAWAH: PENGEMBALIAN ALAT MAKAN -->
+          <div class="doc-section">
+            <div class="header">
+              <img src="Logobgn.png" alt="Logo BGN" class="logo">
+              <div class="header-text">
+                <h3>BADAN GIZI NASIONAL</h3>
+                <h2>SATUAN PELAYANAN PEMENUHAN GIZI</h2>
+                <h1>LABUHANBATU SELATAN TORGAMBA ASAM JAWA</h1>
+                <p>JL. Lintas Sumatera, Asam Jawa, Kec. Torgamba, Kab. Labuhanbatu Selatan. 21464</p>
+              </div>
+              <img src="Logokemala.png" alt="Logo Bhayangkari" class="logo">
+            </div>
+
+            <div class="doc-title">
+              <h4>SURAT JALAN</h4>
+              <p>Nomor : <span contenteditable="true">${noSurat}</span>/SPJ/X/2026/SPPG ASAM JAWA (03 KEMALA BHAYANGKARI)</p>
+            </div>
+
+            <div class="content-body">
+              Pada hari <span contenteditable="true">${hari}</span> Tanggal <span contenteditable="true">${tanggal}</span> Jam <span contenteditable="true">______</span> telah diserahkan kembali alat makanan bergizi sejumlah <span contenteditable="true">${school.qty}</span> Kepada SATUAN PELAYANAN PEMENUHAN GIZI ( SPPG ) Labuhanbatu Selatan Torgamba, Asam Jawa.
+            </div>
+
+            <div class="info-grid">
+              <div class="info-row">
+                <div class="info-label">Yang menyerahkan</div>
+                <div class="info-dots">: ………………………….</div>
+              </div>
+              <div class="info-row">
+                <div class="info-label">(PIC <span contenteditable="true">${school.name}</span>)</div>
+              </div>
+              <div class="info-row">
+                <div class="info-label">Nomor Telpon</div>
+                <div class="info-dots">: ………………………….</div>
+              </div>
+            </div>
+
+            <div class="signature-container">
+              <div class="sig-header" style="text-align: right; padding-right: 50px;">Mengetahui:</div>
+              <div class="sig-roles" style="justify-content: flex-end;">
+                <div class="sig-box" style="margin-right: 20px;">
+                  <div>Pengawas Distribusi</div>
+                  <div class="sig-name" contenteditable="true">Ryan Kurniawan</div>
+                </div>
+              </div>
+
+              <div class="sig-bottom">
+                <div class="sig-bottom-left">
+                  <div>Yang Menerima (Driver) : <span contenteditable="true">${school.driver}</span></div>
+                  <div>Nomor Telepon : <span contenteditable="true">${school.telp}</span></div>
+                </div>
+                <div class="sig-bottom-right">
+                  <div>(……………………………….)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      container.appendChild(wrapper);
+      updatePageCounter();
+    }
+
+    function addNewPageManually() {
+      const selectedSchoolIdx = document.getElementById("schoolSelect").value;
+      addNewPage(parseInt(selectedSchoolIdx));
+    }
+
+    function removePage(id) {
+      const el = document.getElementById(`pageWrapper_${id}`);
+      if (el) {
+        el.remove();
+        updatePageCounter();
+      }
+    }
+
+    function updatePageCounter() {
+      const totalPages = document.querySelectorAll('.page-wrapper').length;
+      document.getElementById("pageCounterText").innerText = `Total Lembar: ${totalPages} Halaman`;
+    }
+  </script>
+</body>
+</html>
